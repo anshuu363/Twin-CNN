@@ -31,4 +31,11 @@ python main.py download-weights --out weights/vgg_face_dag.pth
 
 # 1. per-class train/test split (shared by every later stage)
 python main.py split --root data/polyu --out outputs/polyu/split.json
+
+# 2. fine-tune VGG-Face separately on VIS and NIR (complete fine-tuning,
+#    SGD + Nesterov momentum, cross-entropy, dropout 0.5)
+python main.py finetune --split outputs/polyu/split.json --out-dir outputs/polyu
+#    -> outputs/polyu/vggface_VIS.pth, vggface_NIR.pth
+#    interrupted? rerun the same command with --resume
+#    low on memory? add --batch-size 8
 ```

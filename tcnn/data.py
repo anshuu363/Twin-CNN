@@ -89,13 +89,24 @@ def load_splits(path: str | Path) -> dict:
     return split
 
 
+def _to_rgb(im: Image.Image) -> Image.Image:
+    return im.convert("RGB")  # grayscale NIR -> 3 identical channels
+
+
+def _to_float(t: torch.Tensor) -> torch.Tensor:
+    return t.float()
+
+
 def vggface_transform() -> transforms.Compose:
-    """224x224 RGB, 0-255 range, VGG-Face mean subtracted."""
+    """224x224 RGB, 0-255 range, VGG-Face mean subtracted.
+
+    Uses named functions (not lambdas) so DataLoader worker processes can pickle it.
+    """
     return transforms.Compose([
-        transforms.Lambda(lambda im: im.convert("RGB")),  # grayscale NIR -> 3 channels
+        transforms.Lambda(_to_rgb),
         transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
         transforms.PILToTensor(),
-        transforms.Lambda(lambda t: t.float()),
+        transforms.Lambda(_to_float),
         transforms.Normalize(mean=VGGFACE_MEAN, std=(1.0, 1.0, 1.0)),
     ])
 

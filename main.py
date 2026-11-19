@@ -1,11 +1,12 @@
 """Command-line entry point for the TCNN pipeline.
 
 Stages (run in order):
-    split     - build the per-class train/test split of a database
+    download-weights - fetch the pre-trained VGG-Face weights
+    split            - build the per-class train/test split of a database
 """
 import argparse
 
-from tcnn import data
+from tcnn import data, vggface
 
 
 def cmd_split(args):
@@ -16,9 +17,17 @@ def cmd_split(args):
           + f" -> {args.out}")
 
 
+def cmd_download(args):
+    print(f"VGG-Face weights at {vggface.download_vggface_weights(args.out)}")
+
+
 def build_parser():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
+
+    s = sub.add_parser("download-weights", help="download pre-trained VGG-Face weights")
+    s.add_argument("--out", default="weights/vgg_face_dag.pth")
+    s.set_defaults(func=cmd_download)
 
     s = sub.add_parser("split", help="create train/test split")
     s.add_argument("--root", required=True, help="dataset root containing VIS/ and NIR/")

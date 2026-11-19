@@ -26,6 +26,9 @@ The left and right eyes of one subject are **separate classes**, as in the paper
 ## Pipeline
 
 ```bash
+# 0. pre-trained VGG-Face weights (~580 MB, Oxford VGG / pytorch-mcn conversion)
+python main.py download-weights --out weights/vgg_face_dag.pth
+
 # 1. per-class train/test split (shared by every later stage)
 python main.py split --root data/polyu --out outputs/polyu/split.json
 ```

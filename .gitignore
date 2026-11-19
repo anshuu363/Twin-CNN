@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+# datasets, weights and experiment outputs are not versioned
+data/
+weights/
+outputs/
+*.pth
+*.pt
+# the paper itself (IEEE licensed copy)
+*.pdf

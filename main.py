@@ -4,10 +4,11 @@ Stages (run in order):
     download-weights - fetch the pre-trained VGG-Face weights
     split            - build the per-class train/test split of a database
     finetune         - fine-tune VGG-Face separately on VIS and NIR images
+    extract          - extract pool5 features with the frozen fine-tuned networks
 """
 import argparse
 
-from tcnn import data, finetune, vggface
+from tcnn import data, features, finetune, vggface
 
 
 def cmd_split(args):
@@ -29,6 +30,11 @@ def cmd_finetune(args):
                           batch_size=args.batch_size, lr=args.lr, momentum=args.momentum, dropout=args.dropout,
                           weight_decay=args.weight_decay, num_workers=args.workers, device=args.device,
                           seed=args.seed, resume=args.resume)
+
+
+def cmd_extract(args):
+    features.extract_all(args.split, args.model_dir, args.out_dir, batch_size=args.batch_size,
+                         num_workers=args.workers, device=args.device)
 
 
 def build_parser():
@@ -62,6 +68,15 @@ def build_parser():
     s.add_argument("--seed", type=int, default=0)
     s.add_argument("--resume", action="store_true", help="continue an interrupted run")
     s.set_defaults(func=cmd_finetune)
+
+    s = sub.add_parser("extract", help="extract pool5 features of all images")
+    s.add_argument("--split", required=True)
+    s.add_argument("--model-dir", required=True, help="folder with vggface_VIS.pth / vggface_NIR.pth")
+    s.add_argument("--out-dir", default=None, help="defaults to --model-dir")
+    s.add_argument("--batch-size", type=int, default=32)
+    s.add_argument("--workers", type=int, default=2)
+    s.add_argument("--device", default="auto")
+    s.set_defaults(func=cmd_extract)
     return p
 
 

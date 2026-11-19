@@ -38,4 +38,25 @@ python main.py finetune --split outputs/polyu/split.json --out-dir outputs/polyu
 #    -> outputs/polyu/vggface_VIS.pth, vggface_NIR.pth
 #    interrupted? rerun the same command with --resume
 #    low on memory? add --batch-size 8
+
+# 3. extract pool5 features ([512, 7, 7]) with the frozen fine-tuned networks
+python main.py extract --split outputs/polyu/split.json --model-dir outputs/polyu
+#    -> outputs/polyu/features_<VIS|NIR>_<train|test>.pt
+```
+
+## Demonstration dataset (no licence needed)
+
+The paper's databases require licences. To run the pipeline without them,
+`scripts/make_lfw_periocular.py` builds a stand-in from the public LFW face
+dataset: fixed eye crops (left/right eye = separate classes), half of each
+person's photos used as VIS and the other half converted to **simulated NIR**.
+Results on it are a functional demonstration only and are not comparable with
+the paper.
+
+```bash
+pip install pyarrow
+curl -L -o data/raw/lfw_train.parquet \
+  https://huggingface.co/datasets/logasja/lfw/resolve/main/data/train-00000-of-00001.parquet
+python scripts/make_lfw_periocular.py --parquet data/raw/lfw_train.parquet --out data/lfw_periocular
+python main.py split --root data/lfw_periocular --out outputs/lfw/split.json
 ```

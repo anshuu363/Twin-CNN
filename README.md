@@ -70,3 +70,24 @@ curl -L -o data/raw/lfw_train.parquet \
 python scripts/make_lfw_periocular.py --parquet data/raw/lfw_train.parquet --out data/lfw_periocular
 python main.py split --root data/lfw_periocular --out outputs/lfw/split.json
 ```
+
+### Results on the demonstration dataset
+
+Full pipeline run on an Apple M2 (8 GB): 316 classes, 5,082 periocular images,
+fine-tuning 20 epochs per spectrum (lr 1e-4, batch 8), TCNN 30 epochs (lr 1e-4).
+Evaluation on all 718 x 766 = 550k test pairs (1,882 genuine):
+
+| Model | Acc. (%) | Precision | Recall | AUC | EER (%) | GAR (%) @ FAR = 0.1 |
+|---|---|---|---|---|---|---|
+| TCNN, no dropout | 98.19 | 0.056 | 0.270 | 0.92 | 15.58 | 72.64 |
+| TCNN, dropout 0.25 | 87.94 | 0.020 | 0.729 | 0.91 | 16.94 | 67.59 |
+
+These show the implementation works end to end; with simulated NIR they are
+**not comparable** with the paper's results on PolyU / IMP / Cross-eyed.
+
+## Notes on hyperparameters
+
+The paper does not report learning rates, batch sizes or epochs. Defaults here:
+fine-tuning lr 1e-4 (1e-3 diverged), batch 16 (use 8 on 8 GB machines), 20 epochs;
+TCNN lr 1e-4 (1e-3 collapsed on real pool5 features), batch 64, 30 epochs, one
+re-sampled imposter pair per genuine pair per epoch.

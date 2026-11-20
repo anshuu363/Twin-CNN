@@ -98,7 +98,7 @@ def build_parser():
                    help="one or more dropout values; one model is trained per value")
     s.add_argument("--epochs", type=int, default=30)
     s.add_argument("--batch-size", type=int, default=64)
-    s.add_argument("--lr", type=float, default=1e-3)
+    s.add_argument("--lr", type=float, default=1e-4)
     s.add_argument("--momentum", type=float, default=0.9)
     s.add_argument("--imposter-ratio", type=float, default=1.0, help="imposter pairs per genuine pair")
     s.add_argument("--device", default="auto")

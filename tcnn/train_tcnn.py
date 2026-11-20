@@ -77,7 +77,7 @@ def run_pairs(model, vis_f, nir_f, pairs, targets, device, criterion, batch_size
 
 
 def train_tcnn(feature_dir: str, out_dir: str | None = None, dropout: float = 0.25, epochs: int = 30,
-               batch_size: int = 64, lr: float = 1e-3, momentum: float = 0.9, imposter_ratio: float = 1.0,
+               batch_size: int = 64, lr: float = 1e-4, momentum: float = 0.9, imposter_ratio: float = 1.0,
                device: str = "auto", seed: int = 0) -> Path:
     set_seed(seed)
     dev = get_device(device)

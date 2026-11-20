@@ -47,6 +47,11 @@ python main.py extract --split outputs/polyu/split.json --model-dir outputs/poly
 #    genuine/imposter VIS-NIR feature pairs, without and with dropout 0.25
 python main.py train --feature-dir outputs/polyu --dropout 0 0.25
 #    -> outputs/polyu/tcnn_dropout0.pth, tcnn_dropout0.25.pth
+
+# 5. evaluate on all-to-all test pairs (Table I metrics + ROC curve, Fig. 3)
+python main.py evaluate --feature-dir outputs/polyu \
+    --models outputs/polyu/tcnn_dropout0.pth outputs/polyu/tcnn_dropout0.25.pth --title PolyU
+#    -> outputs/polyu/results.json, roc.png
 ```
 
 ## Demonstration dataset (no licence needed)

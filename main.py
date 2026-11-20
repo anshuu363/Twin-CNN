@@ -6,10 +6,11 @@ Stages (run in order):
     finetune         - fine-tune VGG-Face separately on VIS and NIR images
     extract          - extract pool5 features with the frozen fine-tuned networks
     train            - train the TCNN shared block on VIS-NIR feature pairs
+    evaluate         - all-to-all test pairs: accuracy, loss, precision, recall, AUC, EER, GAR@FAR=0.1, ROC
 """
 import argparse
 
-from tcnn import data, features, finetune, train_tcnn, vggface
+from tcnn import data, evaluate, features, finetune, train_tcnn, vggface
 
 
 def cmd_split(args):
@@ -43,6 +44,10 @@ def cmd_train(args):
         train_tcnn.train_tcnn(args.feature_dir, args.out_dir, dropout=p, epochs=args.epochs,
                               batch_size=args.batch_size, lr=args.lr, momentum=args.momentum,
                               imposter_ratio=args.imposter_ratio, device=args.device, seed=args.seed)
+
+
+def cmd_evaluate(args):
+    evaluate.evaluate(args.feature_dir, args.models, args.out_dir, device=args.device, title=args.title)
 
 
 def build_parser():
@@ -99,6 +104,14 @@ def build_parser():
     s.add_argument("--device", default="auto")
     s.add_argument("--seed", type=int, default=0)
     s.set_defaults(func=cmd_train)
+
+    s = sub.add_parser("evaluate", help="evaluate trained TCNN model(s) on all-to-all test pairs")
+    s.add_argument("--feature-dir", required=True)
+    s.add_argument("--models", nargs="+", required=True, help="tcnn_*.pth files (all drawn on one ROC plot)")
+    s.add_argument("--out-dir", default=None, help="defaults to --feature-dir")
+    s.add_argument("--title", default="", help="ROC plot title")
+    s.add_argument("--device", default="auto")
+    s.set_defaults(func=cmd_evaluate)
     return p
 
 

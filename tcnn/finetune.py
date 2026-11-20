@@ -94,11 +94,16 @@ def finetune(split_path: str, spectrum: str, weights: str, out_dir: str, epochs:
         history.append(dict(epoch=epoch, train_loss=tr_loss, train_acc=tr_acc, test_loss=te_loss, test_acc=te_acc))
         print(f"[{spectrum}] epoch {epoch}/{epochs}  train loss {tr_loss:.4f} acc {tr_acc:.2%} | "
               f"test loss {te_loss:.4f} acc {te_acc:.2%} | {time.time() - t0:.0f}s", flush=True)
+        if dev.type == "mps":
+            torch.mps.empty_cache()  # give cached GPU memory back to the system (8 GB machines)
+        # Model weights only (no optimiser state, to keep the memory spike of saving small);
+        # a resumed run restarts the momentum buffer. Written to a temporary file and then
+        # renamed, so a run killed while saving never leaves a corrupt checkpoint.
         ckpt = dict(model=model.state_dict(), config=config, classes=split["classes"], epoch=epoch,
                     history=history)
-        if epoch < epochs:  # keep optimiser state only while training can still be resumed
-            ckpt["optimizer"] = optimizer.state_dict()
-        torch.save(ckpt, out)
+        torch.save(ckpt, out.with_suffix(".tmp"))
+        out.with_suffix(".tmp").replace(out)
+        del ckpt
 
     with open(out.with_suffix(".history.json"), "w") as f:
         json.dump(dict(config=config, history=history), f, indent=1)

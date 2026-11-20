@@ -42,6 +42,11 @@ python main.py finetune --split outputs/polyu/split.json --out-dir outputs/polyu
 # 3. extract pool5 features ([512, 7, 7]) with the frozen fine-tuned networks
 python main.py extract --split outputs/polyu/split.json --model-dir outputs/polyu
 #    -> outputs/polyu/features_<VIS|NIR>_<train|test>.pt
+
+# 4. train the TCNN shared block (FC6-FC7 shared, L1 layer, softmax) on
+#    genuine/imposter VIS-NIR feature pairs, without and with dropout 0.25
+python main.py train --feature-dir outputs/polyu --dropout 0 0.25
+#    -> outputs/polyu/tcnn_dropout0.pth, tcnn_dropout0.25.pth
 ```
 
 ## Demonstration dataset (no licence needed)

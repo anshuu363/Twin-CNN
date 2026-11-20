@@ -5,10 +5,11 @@ Stages (run in order):
     split            - build the per-class train/test split of a database
     finetune         - fine-tune VGG-Face separately on VIS and NIR images
     extract          - extract pool5 features with the frozen fine-tuned networks
+    train            - train the TCNN shared block on VIS-NIR feature pairs
 """
 import argparse
 
-from tcnn import data, features, finetune, vggface
+from tcnn import data, features, finetune, train_tcnn, vggface
 
 
 def cmd_split(args):
@@ -35,6 +36,13 @@ def cmd_finetune(args):
 def cmd_extract(args):
     features.extract_all(args.split, args.model_dir, args.out_dir, batch_size=args.batch_size,
                          num_workers=args.workers, device=args.device)
+
+
+def cmd_train(args):
+    for p in args.dropout:  # the paper reports both "no dropout" (0) and 0.25
+        train_tcnn.train_tcnn(args.feature_dir, args.out_dir, dropout=p, epochs=args.epochs,
+                              batch_size=args.batch_size, lr=args.lr, momentum=args.momentum,
+                              imposter_ratio=args.imposter_ratio, device=args.device, seed=args.seed)
 
 
 def build_parser():
@@ -77,6 +85,20 @@ def build_parser():
     s.add_argument("--workers", type=int, default=2)
     s.add_argument("--device", default="auto")
     s.set_defaults(func=cmd_extract)
+
+    s = sub.add_parser("train", help="train the TCNN shared block")
+    s.add_argument("--feature-dir", required=True, help="folder with features_*.pt")
+    s.add_argument("--out-dir", default=None, help="defaults to --feature-dir")
+    s.add_argument("--dropout", type=float, nargs="+", default=[0.0, 0.25],
+                   help="one or more dropout values; one model is trained per value")
+    s.add_argument("--epochs", type=int, default=30)
+    s.add_argument("--batch-size", type=int, default=64)
+    s.add_argument("--lr", type=float, default=1e-3)
+    s.add_argument("--momentum", type=float, default=0.9)
+    s.add_argument("--imposter-ratio", type=float, default=1.0, help="imposter pairs per genuine pair")
+    s.add_argument("--device", default="auto")
+    s.add_argument("--seed", type=int, default=0)
+    s.set_defaults(func=cmd_train)
     return p
 
 
